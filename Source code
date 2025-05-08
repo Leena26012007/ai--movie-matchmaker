@@ -1,0 +1,36 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Load movie data from CSV (specify encoding if needed)
+movies = pd.read_csv(r'C:\Users\welcome\Documents\leena team project\leena.csv', encoding='ISO-8859-1')
+
+# Combine genre and description to simulate content + personality compatibility
+movies['features'] = movies['genre'] + ' ' + movies['description']
+
+# Simulated user profile
+user_profile = {
+    'preferred_genres': 'sci-fi action',
+    'personality_keywords': 'intelligent imaginative fast-paced thrilling'
+}
+
+# Create user feature text (combine genres and personality keywords)
+user_text = user_profile['preferred_genres'] + ' ' + user_profile['personality_keywords']
+
+# Vectorize both movie features and user profile
+vectorizer = TfidfVectorizer(stop_words='english')
+movie_vectors = vectorizer.fit_transform(movies['features'])
+user_vector = vectorizer.transform([user_text])
+
+# Calculate cosine similarity between user profile and movie features
+similarities = cosine_similarity(user_vector, movie_vectors).flatten()
+
+# Add the similarity score as a new column in the DataFrame
+movies['recommendation_score'] = similarities
+
+# Sort movies by recommendation score in descending order
+top_recommendations = movies.sort_values(by='recommendation_score', ascending=False)
+
+# Print top 5 movie recommendations
+print("Top Movie Recommendations:")
+print(top_recommendations[['title', 'recommendation_score']].head(5))
